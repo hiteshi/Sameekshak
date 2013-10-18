@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datasources>
+  <local-tx-datasource>
+    <jndi-name>SameekshakDB</jndi-name>
+    <connection-url>jdbc:mysql://172.16.32.55:3306/SAMEEKSHAK</connection-url>
+    <driver-class>com.mysql.jdbc.Driver</driver-class>
+     <min-pool-size>1</min-pool-size>
+      <max-pool-size>200</max-pool-size>
+      <user-name>sameekshak</user-name>
+    	<password>sameekshak@123</password>
+    <metadata>
+       <type-mapping>mySQL</type-mapping>
+    </metadata>
+  </local-tx-datasource>
+</datasources>

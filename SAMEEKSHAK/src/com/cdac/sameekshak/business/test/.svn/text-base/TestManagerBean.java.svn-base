@@ -1,0 +1,746 @@
+/**
+ * 
+ */
+package com.cdac.sameekshak.business.test;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.sql.Time;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import org.apache.commons.fileupload.FileItem;
+import org.jboss.ejb3.annotation.RemoteBinding;
+
+import com.cdac.sameekshak.entities.Administrator;
+import com.cdac.sameekshak.entities.Question;
+import com.cdac.sameekshak.entities.Question_Type;
+import com.cdac.sameekshak.entities.Student;
+import com.cdac.sameekshak.entities.Test;
+import com.cdac.sameekshak.entities.Test_Case;
+import com.cdac.sameekshak.util.ShellScriptExecutor;
+
+/**
+ * @author Group-5
+ *this is the main test bean implementing all the functionality of the four interfaces Admin+Student
+ *
+ */
+@Stateless
+@RemoteBinding(jndiBinding="TestManager")
+public class TestManagerBean implements TestAdminTestManager,
+FacultyAdminTestManager, CourseAdminTestManager, Miscllaneous ,StudentTestManager {
+
+	List files;
+	//	Adding a persistence context to map to the db to the entitymanager so as to allow jboss to gain control
+	@PersistenceContext(unitName="sameekshak_persistence_context")
+	private EntityManager entityManager;
+
+
+	//	---------------------------------------------
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Test> populateTest() {
+		// get all the test details from database
+
+		try {
+			System.out.println(" populateTest() invoked ... ");
+			Query query = entityManager.createQuery("from Test test");
+			List<Test> tests=(ArrayList<Test>)query.getResultList();
+			return tests;
+
+		} catch (NoResultException e) {
+			System.out.println("Exception because of test uable to retrieve...");
+			return null;
+		}
+	}
+
+	//	-----------------------------------------
+
+	@Override
+	public Test getTestObject(int testId) {
+		// TODO Auto-generated method stub
+
+		Test test = entityManager.find(Test.class, testId);	
+		
+		return test;
+
+	}
+	@Override
+	public Test getTestObjectStartTest(int testId) {
+		// TODO Auto-generated method stub
+
+		Test test = entityManager.find(Test.class, testId);	
+		test.setStatus("ongoing");
+		entityManager.merge(test);
+		return test;
+
+	}
+
+	@Override
+	public boolean scheduleTest(Test schTest) {
+		// Code for schedule the test by Course Admin
+
+		try {
+			entityManager.persist(schTest);
+			return true;
+
+		} catch(Exception e){
+
+			System.out.println("Error in scheduleTest : "+e);
+			return false;
+		}
+	}
+
+
+	@Override
+	public boolean reScheduleTest(Test scheduleTest,int testId) {
+		// Code for re-schedule the test by Course Admin
+
+		try {
+			Test obj=entityManager.find(Test.class, testId);
+			obj.setName(scheduleTest.getName());
+			obj.setScheduledDate(scheduleTest.getScheduledDate());
+			obj.setScheduledTime(scheduleTest.getScheduledTime());
+			obj.setRemarks(scheduleTest.getRemarks());
+			obj.setDuration(scheduleTest.getDuration());
+			obj.setConductedBy(scheduleTest.getConductedBy());
+			obj.setScheduledBy(scheduleTest.getScheduledBy());
+			entityManager.merge(obj);
+			return true;
+
+		} catch(Exception e){
+
+			System.out.println("Error in reScheduleTest : "+e);
+			return false;
+		}
+	}
+
+//old one ---------------------------------------------------------
+//	@Override
+//	public boolean uploadFile(List fileItems, String filePath,Administrator admin)
+//	{
+//
+//		File file ;
+//		files=fileItems;
+//		Iterator i = fileItems.iterator();
+//		System.out.println("inside been,,,,,,,,,,");
+//		Question ques=new Question();
+//		ques.setQuestionType(findType(13));
+//		FileItem fi = (FileItem)i.next();
+//		System.out.println("test Id=="+fi.getString());
+//		Test test=entityManager.find(Test.class, Integer.parseInt(fi.getString()));
+//		System.out.println("test Id2=="+test.getTestId());
+//		ques.setTests(test);
+//		fi = (FileItem)i.next();
+//
+//		if ( !fi.isFormField () )	
+//		{
+//
+//			try{
+//
+//				String fileName = fi.getName();
+//				file = new File( filePath + fileName.substring(fileName.lastIndexOf("/")+1)) ;
+//				fi.write( file ) ;
+//				byte[] b = new byte[(int) file.length()];
+//				FileInputStream fileInputStream = new FileInputStream(file);
+//				fileInputStream.read(b);
+//				ques.setStatement(b);
+//			}
+//			catch(Exception e)
+//			{
+//				System.out.println("exception in question file writting....");
+//			}
+//
+//		}
+//		ques.setUploadedBy(admin.getAdminName());
+//		fi = (FileItem)i.next();
+//		if(fi.getFieldName().equals("readingDuration")){
+//			System.out.println("reading time field name"+fi.getFieldName()+" , getname= "+fi.getName() +" , getString="+fi.getString());
+//			ques.setReadingDuration(Integer.parseInt(fi.getString()));
+//		}
+//		fi = (FileItem)i.next();
+//		if(fi.getFieldName().equals("evalTime")){
+//			System.out.println("evalution time field name"+fi.getFieldName()+" , getname= "+fi.getName() +" , getString="+fi.getString());
+//			ques.setEvaluationTime(Integer.parseInt(fi.getString()));
+//		}
+//
+//		try {
+//			entityManager.persist(ques);
+//
+//		} catch(Exception e){
+//
+//			System.out.println("Error in scheduleTest : "+e);
+//
+//		}
+//		while ( i.hasNext () ) 
+//		{
+//			fi = (FileItem)i.next();
+//			if(!fi.getFieldName().equals("Upload")){
+//				Test_Case testCase=new Test_Case();
+//				testCase.setQuestion(ques);
+//
+//
+//
+//				try{
+//					String fileName = fi.getName();
+//					System.out.println("file name---------"+fileName);
+//					file = new File( filePath + fileName.substring(fileName.lastIndexOf("/")+1)) ;
+//					fi.write( file ) ;
+//					byte[] b = new byte[(int) file.length()];
+//					FileInputStream fileInputStream = new FileInputStream(file);
+//					fileInputStream.read(b);
+//					testCase.setInput(b);
+//				}
+//				catch(Exception e)
+//				{
+//					System.out.println("exception in input file writting....");
+//					return false;
+//				}
+//
+//				fi = (FileItem)i.next();
+//				testCase.setRemarks(fi.getString());
+//				fi = (FileItem)i.next();
+//
+//
+//				try{
+//					String fileName = fi.getName();
+//					System.out.println("file name----- "+fileName);
+//					file = new File( filePath + fileName.substring(fileName.lastIndexOf("/")+1)) ;
+//					fi.write( file ) ;
+//					byte[] b = new byte[(int) file.length()];
+//					FileInputStream fileInputStream = new FileInputStream(file);
+//					fileInputStream.read(b);
+//					testCase.setOutput(b);
+//				}
+//				catch(Exception e)
+//				{
+//					System.out.println("exception in file writting....");
+//					return false;
+//				}
+//
+//				try {
+//					entityManager.persist(testCase);
+//
+//
+//				} catch(Exception e){
+//
+//					System.out.println("Error in scheduleTest : "+e);
+//					return false;
+//				}
+//			}
+//		}
+//		return true;
+//
+//	}
+	
+//	-------------------------------- new one ---------------------------------------
+	
+	@Override
+	public boolean uploadFile(List fileItems, String filePath,Administrator admin)
+	{
+		File file ;
+		files=fileItems;
+		Iterator i = fileItems.iterator();
+		System.out.println("inside been,,,,,,,,,,");
+		Question ques=new Question();
+		ques.setQuestionType(findType(13));
+		FileItem fi = (FileItem)i.next();
+		System.out.println("test Id=="+fi.getString());
+		Test test=entityManager.find(Test.class, Integer.parseInt(fi.getString()));
+		test.setStatus("ready");
+		entityManager.merge(test);
+		System.out.println("test Id2=="+test.getTestId());
+		ques.setTests(test);
+		System.out.println("test Id2=="+test.getTestId());
+		fi = (FileItem)i.next();
+		if ( !fi.isFormField () )	
+		{
+			try{
+				String fileName = fi.getName();
+				file = new File( filePath + fileName.substring(fileName.lastIndexOf("/")+1)) ;
+				fi.write( file ) ;
+				byte[] b = new byte[(int) file.length()];
+				FileInputStream fileInputStream = new FileInputStream(file);
+				fileInputStream.read(b);
+				ques.setStatement(b);
+				file.delete();
+			}
+			catch(Exception e)
+			{
+				System.out.println("exception in question file writting....");
+			}
+		}
+		ques.setUploadedBy(admin.getAdminName());
+		fi = (FileItem)i.next();
+		if(fi.getFieldName().equals("readingDuration")){
+			System.out.println("reading time field name"+fi.getFieldName()+" , getname= "+fi.getName() +" , getString="+fi.getString());
+			ques.setReadingDuration(Integer.parseInt(fi.getString()));
+		}
+		fi = (FileItem)i.next();
+		if(fi.getFieldName().equals("evalTime")){
+			System.out.println("evalution time field name"+fi.getFieldName()+" , getname= "+fi.getName() +" , getString="+fi.getString());
+			ques.setEvaluationTime(Integer.parseInt(fi.getString()));
+		}
+		try {
+			entityManager.persist(ques);
+		} catch(Exception e){
+			System.out.println("Error in scheduleTest : "+e);
+		}
+		while ( i.hasNext () ) 
+		{
+			fi = (FileItem)i.next();
+			if(!fi.getFieldName().equals("Upload")){
+				Test_Case testCase=new Test_Case();
+				testCase.setQuestion(ques);
+				try{
+					String fileName = fi.getName();
+					System.out.println("file name---------"+fileName);
+					file = new File( filePath + fileName.substring(fileName.lastIndexOf("/")+1)) ;
+					fi.write( file ) ;
+					//byte[] b = new byte[(int) file.length()];
+					FileInputStream fileInputStream = new FileInputStream(file);
+					DataInputStream in = new DataInputStream(fileInputStream);
+					BufferedReader br = new BufferedReader(new InputStreamReader(in));
+					String data="";
+					String allText = "";
+					//Read File Line By Line
+					while ((data = br.readLine()) != null)   {
+						// Print the content on the console
+						allText = allText + data + "\n";
+					}
+					//System.out.println(allText);
+					//Close the input stream
+					in.close();
+					testCase.setInput(allText);
+					file.delete();
+				}
+				catch(Exception e)
+				{
+					System.out.println("exception in input file writting....");
+					return false;
+				}
+				fi = (FileItem)i.next();
+				testCase.setRemarks(fi.getString());
+				fi = (FileItem)i.next();
+				try{
+					String fileName = fi.getName();
+					System.out.println("file name----- "+fileName);
+					file = new File( filePath + fileName.substring(fileName.lastIndexOf("/")+1)) ;
+					fi.write( file ) ;
+					//byte[] b = new byte[(int) file.length()];
+					FileInputStream fileInputStream = new FileInputStream(file);
+					DataInputStream in = new DataInputStream(fileInputStream);
+					BufferedReader br = new BufferedReader(new InputStreamReader(in));
+					String data="";
+					String allText = "";
+					//Read File Line By Line
+					while ((data = br.readLine()) != null)   {
+						// Print the content on the console
+						allText = allText + data + "\n";
+					}
+					//System.out.println(allText);
+					//Close the input stream
+					in.close();
+					testCase.setOutput(allText);
+					file.delete();
+				}
+				catch(Exception e)
+				{
+					System.out.println("exception in file writting....");
+					return false;
+				}
+				try {
+					entityManager.persist(testCase);
+				} catch(Exception e){
+					System.out.println("Error in scheduleTest : "+e);
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	
+	
+	
+	
+//	----------------------------------------------------------------------
+
+	@Override
+	public Question_Type findType(int code) {
+		// to find the Question Type
+
+		return entityManager.find(Question_Type.class, code);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Administrator> adminList() {
+		// to get all the administrator list
+
+		try {
+			System.out.println(" adminList() invoked ... ");
+			Query query = entityManager.createQuery("from Administrator test");
+			List<Administrator> admin=(ArrayList<Administrator>)query.getResultList();
+			return admin;
+
+		} catch (NoResultException e) {
+			System.out.println("Exception in adminList() method...");
+			return null;
+		}
+	}
+
+	private boolean calculateTime(String testDate, String testTime , String currentDate, String currentTime){
+		int testYear=Integer.parseInt(testDate.substring(0, 4));
+		int testMonth=Integer.parseInt(testDate.substring(5, 7));
+		int testDay=Integer.parseInt(testDate.substring(8, 10));
+		int testHour=Integer.parseInt(testTime.substring(0, 2));
+		int testMin=Integer.parseInt(testTime.substring(3, 5));
+		
+		int currentYear=Integer.parseInt(currentDate.substring(0, 4));
+		int currentMonth=Integer.parseInt(currentDate.substring(5, 7));
+		int currentDay=Integer.parseInt(currentDate.substring(8, 10));
+		int currentHour=Integer.parseInt(currentTime.substring(0, 2));
+		int currentMin=Integer.parseInt(currentTime.substring(3, 5));
+		System.out.println("function called -------------------------");
+		
+		if(testYear>=currentYear)
+		{
+			System.out.println(testYear+" >= "+currentYear);
+			if(testMonth>=currentMonth)
+			{
+				System.out.println(testMonth+" >= "+currentMonth);
+				if(testDay>=currentDay)
+				{
+					System.out.println(testDay+" >= "+currentDay);
+					if(testHour>=currentHour)
+					{
+						System.out.println(testHour+" >= "+currentHour);
+						return false;										
+					}
+				}
+			}
+		}
+		return true;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Student> studentList() {
+		// to get all the Student list
+		try {
+			System.out.println(" studentList() invoked ... ");
+			Query query = entityManager.createQuery("from Student student order by student_id");
+			List<Student> studentList=(ArrayList<Student>)query.getResultList();
+			return studentList;
+
+		} catch (NoResultException e) {
+			System.out.println("Exception in adminList() method...");
+			return null;
+		}
+	}
+	
+	@SuppressWarnings("deprecation")
+	public List<Student> eligibleStudent(int testId){
+		try{
+			Test test=entityManager.find(Test.class, testId);
+			Date testDate=test.getScheduledDate();
+			Time testTime=test.getScheduledTime();
+
+			System.out.println("test date = "+testDate+" test TIme= "+testTime);
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			DateFormat dateFormat2 = new SimpleDateFormat("HH:mm:ss");
+			Calendar cal = Calendar.getInstance();
+			String testtime=testTime+"";
+			String testdate=testDate+"";
+			String sysTime=dateFormat2.format(cal.getTime());
+			String sysDate=dateFormat.format(cal.getTime());
+			System.out.println("current date = "+sysDate+" current TIme= "+sysTime);
+			boolean result=calculateTime(testdate,testtime,sysDate,sysTime);
+			System.out.println(result);
+			
+			
+			
+			
+			
+			//--------------------- isko delete karna he--------------------------------
+			result=false;
+			
+			
+			
+			
+			
+			
+			
+			if(result){
+				System.out.println("----------------testDate is befor Date2");
+				return null;
+			}
+			else
+			{
+				
+				System.out.println("testDate is after Date2");
+				try{
+				//entityManager.refresh(test);
+					System.out.println("test id= "+test.getTestId()+ " test name= "+test.getName());
+				List<Student> Students = test.getStudents();
+				System.out.println("student size"+Students.size());
+				for(int i=0;i<Students.size();i++){
+					//if(Students.get(i).getS)
+					System.out.println("student "+i+"  "+Students.get(i).getStudentName());
+				}
+				
+				return Students;
+				}catch (Exception e) {
+					System.out.println("exception in student list ");
+					return null;
+				}
+			}
+		}catch (Exception e) {
+			// TODO: handle exception
+			System.out.println("error in TestManagerBean eligibleStudent");
+			return null;
+		}
+		
+	}
+
+	@Override
+	public void viewPdfQuestion(String studentId, int testId){
+		// Find out the question paper of the student which is assigned by admin
+		Test test=entityManager.find(Test.class, testId);
+		List<Question> questions=test.getQuestions();
+		
+	}
+
+	@Override
+	public Question getQuestionObject(int questionId) {
+		// code to find all the details of question
+		Question question=entityManager.find(Question.class, questionId);
+		return question;
+	}
+
+	@Override
+	public String compileSaveCode(String fileName, String code, String input,int questionId, String savePath) {
+		// code to compile and save the user code and return the output
+		
+		String ar[]={savePath+fileName+"_Term.sh"};
+		try{
+			
+			FileWriter fstream = new FileWriter(savePath+fileName+".java");
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write(code);
+			out.close();
+			
+			
+			FileWriter fstream12 = new FileWriter(savePath+"input.txt");
+			BufferedWriter out12 = new BufferedWriter(fstream12);
+			out12.write(input);
+			out12.close();
+			
+		}catch (Exception e){
+			
+			System.err.println("Error in compileSaveCode() saving file : " + e.getMessage());
+		}
+		
+		
+		try{
+			
+			Question question=entityManager.find(Question.class, questionId);
+			int evalTime = question.getEvaluationTime();
+			
+//			String shellTerminator = "temp=$(ps ux | grep '"+fileName+"_Term' | awk '{print $2}')\nsleep "+evalTime+"\nkill -9 ${temp}";
+			String shellfile ="cd "+savePath+"\n" +"javac "+fileName+".java\n";
+			FileWriter fstream1 = new FileWriter(savePath+fileName+"_Term.sh");
+			BufferedWriter out1 = new BufferedWriter(fstream1);
+			out1.write(shellfile);
+			out1.close();
+			ShellScriptExecutor.Main(ar);
+			if((ShellScriptExecutor.finalOutput).equals("")){
+			
+				String compile ="cd "+savePath+"\n"+"java "+fileName+" < input.txt";
+//				 + "sh "+fileName+"_Terminator.sh &\n"
+				System.out.println(shellfile);
+				FileWriter fstream2 = new FileWriter(savePath+fileName+"_Term.sh");
+				BufferedWriter out2 = new BufferedWriter(fstream2);
+				out2.write(compile);
+				out2.close();
+//				
+//				FileWriter fstream3 = new FileWriter("/home/d1153025/Desktop/SAM/Programs/"+fileName+"_Terminator.sh");
+//				BufferedWriter out3 = new BufferedWriter(fstream3);
+//				out3.write(shellTerminator);
+//				out3.close();
+				
+
+				ShellScriptExecutor.Main(ar);
+			}
+			
+		}catch (Exception e) {
+
+			System.err.println("Error in compileSaveCode() compiling code : " + e.getMessage());
+		}
+		
+		try {
+			Thread.sleep(2000);/////////this is hard coded .... correct this coz speed mismatch with shell script executer use wait & notify
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			System.out.println(" thread.sleep me problem hai test manager bean me...");
+			e.printStackTrace();
+		}
+		
+//		System.out.println(" inside test manager bean : final output = "+ShellScriptExecutor.finalOutput);
+		return ShellScriptExecutor.finalOutput;
+	}
+
+	@Override
+	public List<Test_Case> getNumberofEvaluationCases(int questionId) {
+		// TODO Auto-generated method stub
+		Question currentQuestion = entityManager.find(Question.class, questionId);
+		
+		List<Test_Case> listOfTestCases = currentQuestion.getTestCases();
+		currentQuestion.getTestCases().size();
+		
+		return listOfTestCases;
+		
+		
+	}
+
+	@Override
+	public String submitCode(String fileName, String code) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<Question> getQuestionList(int testId) {
+		Test test=entityManager.find(Test.class, testId);
+		List<Question> ques=test.getQuestions();
+		test.getQuestions().size();
+		System.out.println(".......... inside TestmanagerBean qUESTION oBJECT = "+test.getQuestions().size());
+		for(int i=0;i<ques.size();i++){
+			System.out.println(".......... inside StartTestServlet QuestionId "+i+" =  "+ques.get(i).getQuestionId());
+		}
+		return ques;
+	}
+
+	@Override
+	public boolean downloadQuestionPDF(int questId,String downloadPath) {
+		// code to download question from database
+
+		FileOutputStream fos=null;
+		try{
+			
+			Question ques=entityManager.find(Question.class, questId);
+			byte[] pdfBytes=ques.getStatement();
+			File someFile = new File(downloadPath+questId+".pdf");
+			fos = new FileOutputStream(someFile);
+			fos.write(pdfBytes);
+			fos.flush();
+			
+			return true;
+		}catch (Exception e) {
+		
+			System.out.println("Exception in downloadQuestionPDF :"+e);
+			return false;
+		}finally{
+			try {
+				
+				fos.close();
+				
+			} catch (IOException e) {
+				
+				e.printStackTrace();
+			} 
+		}
+		
+	}
+	
+	@Override
+	public List<Student> getEnrolledStudents(int year) {
+		try {
+			System.out.println(" studentList() invoked ... ");
+			Query query = entityManager.createQuery("from Student student where enrolled_year="+year+" order by student_id");
+			List<Student> studentList=(ArrayList<Student>)query.getResultList();
+			return studentList;
+
+		} catch (NoResultException e) {
+			System.out.println("Exception in adminList() method...");
+			return null;
+		}
+	}
+	@Override
+	public boolean uploadEligibleStudent(String[] students, String testId) {
+		
+		
+		Test test = entityManager.find(Test.class, Integer.parseInt(testId));
+		System.out.println("test chal gaya========== "+test.getName());
+		List<Student> stud=new ArrayList<Student>(0);
+		
+		System.out.println("list size"+stud.size());
+		for(int i=0;i<students.length;i++){
+			Student student=entityManager.find(Student.class, students[i]);
+			System.out.println("student chal gaya========== "+student.getStudentName());
+			
+			stud.add(student);
+			System.out.println("student chal gaya========== "+student.getStudentName());
+			
+		}
+		test.setStudents(stud);
+		System.out.println("copy ho gaya ========== "+test);
+		List<Test> tests=new ArrayList<Test>(0);
+		tests.add(test);
+		for(int i=0;i<students.length;i++){
+			
+			Student stueee = entityManager.find(Student.class, students[i]);
+			stueee.setTests(tests);
+			
+		}
+		
+		entityManager.merge(test);
+		System.out.println("merge b hogya========== "+test);
+		
+		
+		return true;
+	}
+
+	@Override
+	public void cancelTest(int testId) {
+		// TODO Auto-generated method stub
+		System.out.println("test delete ho gaya : "+testId);
+		
+		Test test=entityManager.find(Test.class, testId);
+		entityManager.remove(test);
+
+		System.out.println("test delete ho gaya : "+testId);
+		
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+}

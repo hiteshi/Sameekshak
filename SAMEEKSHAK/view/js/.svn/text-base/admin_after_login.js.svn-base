@@ -1,0 +1,390 @@
+
+function sayHello() {
+	
+//	use this function to test working
+	
+	alert(" hello World !! ");	
+	
+}
+
+function setTestLinksBasedOnRoles(roleValue) {
+	
+		
+	if (roleValue == 1) {
+		
+//			only TestAdmin
+		
+		
+
+	$('#option1').html("<a href=\"javascript:loadStartTestPage();\">Start Test</a>");
+	$('#option2').html("<a href=\"javascript:loadOngoingTestPage();\">Ongoing Test</a>");
+	$('#option3').html("-");
+	$('#option4').html("-");
+	$('#option5').html("-");
+	$('#option6').html("-");
+	
+//	testLinks[2]="-";
+//	testLinks[3]="-";
+//	testLinks[4]="-";
+//	testLinks[5]="-";
+//	testLinks[6]="-";
+//		testLinks[7]="-";
+//		testLinks[8]="-";
+	
+	
+} else if (roleValue == 2) {
+	
+//		only FacultyAdmin 
+
+	$('#option1').html("<a href=\"javascript:loadUploadQuestionsPage();\">Upload Questions</a>");
+	$('#option2').html("-");
+	$('#option3').html("-");
+	$('#option4').html("-");
+	$('#option5').html("-");
+	$('#option6').html("-");
+		
+//	testLinks[0]="Upload Questions";
+//	testLinks[1]="-";
+//	testLinks[2]="-";
+//	testLinks[3]="-";
+//	testLinks[4]="-";
+//	testLinks[5]="-";
+//	testLinks[6]="-";
+//		testLinks[7]="-";
+//		testLinks[8]="-";
+	
+
+} else if (roleValue == 3) {
+	
+//		FacultyAdmin + TestAdmin
+	
+	$('#option1').html("<a  href=\"javascript:loadUploadQuestionsPage();\">Upload Questions</a>");
+	$('#option2').html("<a  href=\"javascript:loadStartTestPage();\">Start Test</a>");
+	$('#option3').html("<a  href=\"javascript:loadOngoingTestPage();\">Ongoing Test</a>");
+	$('#option4').html("-");
+	$('#option5').html("-");
+	$('#option6').html("-");
+	
+	
+	
+	
+	
+	
+//	testLinks[0]="Upload Questions";
+//	testLinks[1]="Start Test";
+//	testLinks[2]="Ongoing Test";
+//	testLinks[3]="-";
+//	testLinks[4]="-";
+//	testLinks[5]="-";
+//	testLinks[6]="-";
+//		testLinks[7]="-";
+//		testLinks[8]="-";
+
+} else if (roleValue == 4) {
+	
+//		only courseAdmin
+
+	$('#option1').html("<a href=\"javascript:loadScheduleNewPage();\">Schedule New</a>");
+	$('#option2').html("<a href=\"javascript:loadReschedulePage();\">Reschedule</a>");
+	$('#option3').html("-");
+	$('#option4').html("-");
+	$('#option5').html("-");
+	$('#option6').html("-");
+	
+	
+	
+	
+//	testLinks[0]="Schedule New";
+//	testLinks[1]="Reschedule";
+//	testLinks[2]="-";
+//	testLinks[3]="-";
+//	testLinks[4]="-";
+//	testLinks[5]="-";
+//	testLinks[6]="-";
+//		testLinks[7]="-";
+//		testLinks[8]="-";
+	
+	
+
+} else if (roleValue == 5) {
+	
+//		CourseAdmin + TestAdmin
+
+	$('#option1').html("<a  href=\"javascript:loadScheduleNewPage();\">Schedule New</a>");
+	$('#option2').html("<a  href=\"javascript:loadReschedulePage();\">Reschedule</a>");
+	$('#option3').html("<a  href=\"javascript:loadStartTestPage();\">Start Test</a>");
+	$('#option4').html("<a  href=\"javascript:loadOngoingTestPage();\">Ongoing Test</a>");
+	$('#option5').html("-");
+	$('#option6').html("-");
+	
+	
+	
+	
+//	testLinks[0]="Schedule New";
+//	testLinks[1]="Reschedule";
+//	testLinks[2]="Start Test";
+//	testLinks[3]="Ongoing Test";
+//	testLinks[4]="-";
+//	testLinks[5]="-";
+//	testLinks[6]="-";
+//		testLinks[7]="-";
+//		testLinks[8]="-";
+	
+
+} else if (roleValue == 6) {
+	
+//		CourseAdmin + FacultyAdmin
+	
+	$('#option1').html("<a href=\"javascript:loadScheduleNewPage();\">Schedule New</a>");
+	$('#option2').html("<a href=\"javascript:loadReschedulePage();\">Reschedule</a>");
+	$('#option3').html("<a href=\"javascript:loadUploadQuestionsPage();\">Upload Questions</a>");
+	$('#option4').html("-");
+	$('#option5').html("-");
+	$('#option6').html("-");
+	
+	
+	
+	
+	
+//	testLinks[0]="Schedule New";
+//	testLinks[1]="Reschedule";
+//	testLinks[2]="Upload Questions";
+//	testLinks[3]="-";
+//	testLinks[4]="-";
+//	testLinks[5]="-";
+//	testLinks[6]="-";
+//		testLinks[7]="-";
+//		testLinks[8]="-";
+
+} else if (roleValue == 7) {
+
+//		all roles
+
+	$('#option1').html("<a  href=\"javascript:loadScheduleNewPage();\">Schedule New</a>");
+	$('#option2').html("<a  href=\"javascript:loadReschedulePage();\">Reschedule</a>");
+	$('#option3').html("<a  href=\"javascript:loadUploadQuestionsPage();\">Upload Questions</a>");
+	$('#option4').html("<a  href=\"javascript:loadStartTestPage();\">Start Test</a>");
+	$('#option5').html("<a  href=\"javascript:loadOngoingTestPage();\">Ongoing Test</a>");
+	$('#option6').html("<a  href=\"javascript:loadEligibleStudentPage();\">Select Eligible Student</a>");
+	$('#option6').html("<a  href=\"javascript:loadCancelTestPage();\">Cancel Test</a>");
+	
+	
+	
+	
+//	testLinks[0]="Schedule New";
+//	testLinks[1]="Reschedule";
+//	testLinks[2]="Upload Questions";
+//	testLinks[3]="Start Test";
+//	testLinks[4]="Ongoing Test";
+//	testLinks[5]="-";
+//	testLinks[6]="-";
+//		testLinks[7]="-";
+//		testLinks[8]="-";
+	
+}
+	
+	
+}//------------------------------setTestLinksBasedOnRoles------------ending ----------------------
+
+function setProfileLinksBasedOnRoles(roleValue){
+	
+	if (roleValue == 1) {
+		
+//		only TestAdmin
+	
+$('#option1').html("<a href=\"javascript:loadViewStudentProfilePage();\">View Student Profile</a>");
+$('#option2').html("<a href=\"javascript:loadViewAdminProfilePage();\">View Admin Profile</a>");
+$('#option3').html("<a href=\"javascript:loadChangePasswordPage();\">Change Password</a>");
+$('#option4').html("-");
+$('#option5').html("-");
+$('#option6').html("-");
+
+//testLinks[2]="-";
+//testLinks[3]="-";
+//testLinks[4]="-";
+//testLinks[5]="-";
+//testLinks[6]="-";
+//	testLinks[7]="-";
+//	testLinks[8]="-";
+
+
+} else if (roleValue == 2) {
+
+//	only FacultyAdmin 
+
+$('#option1').html("<a href=\"javascript:loadViewStudentProfilePage();\">View Student Profile</a>");
+$('#option2').html("<a href=\"javascript:loadViewAdminProfilePage();\">View Admin Profile</a>");
+$('#option3').html("<a href=\"javascript:loadChangePasswordPage();\">Change Password</a>");
+$('#option4').html("-");
+$('#option5').html("-");
+$('#option6').html("-");
+	
+//testLinks[0]="Upload Questions";
+//testLinks[1]="-";
+//testLinks[2]="-";
+//testLinks[3]="-";
+//testLinks[4]="-";
+//testLinks[5]="-";
+//testLinks[6]="-";
+//	testLinks[7]="-";
+//	testLinks[8]="-";
+
+
+} else if (roleValue == 3) {
+
+//	FacultyAdmin + TestAdmin
+
+$('#option1').html("<a href=\"javascript:loadViewStudentProfilePage();\">View Student Profile</a>");
+$('#option2').html("<a href=\"javascript:loadViewAdminProfilePage();\">View Admin Profile</a>");
+$('#option3').html("<a href=\"javascript:loadChangePasswordPage();\">Change Password</a>");
+$('#option4').html("-");
+$('#option5').html("-");
+$('#option6').html("-");
+
+
+
+
+
+
+//testLinks[0]="Upload Questions";
+//testLinks[1]="Start Test";
+//testLinks[2]="Ongoing Test";
+//testLinks[3]="-";
+//testLinks[4]="-";
+//testLinks[5]="-";
+//testLinks[6]="-";
+//	testLinks[7]="-";
+//	testLinks[8]="-";
+
+} else if (roleValue == 4) {
+
+//	only courseAdmin
+
+	$('#option1').html("<a href=\"javascript:loadCreateStudentPage();\">Create Student</a>");
+	$('#option2').html("<a href=\"javascript:loadCreateAdminPage();\">Create Admin</a>");
+	$('#option3').html("<a href=\"javascript:loadEditStudentProfilePage();\">Edit Student profile</a>");
+	$('#option4').html("<a href=\"javascript:loadEditProfileAdminPage();\">Edit Admin Profile</a>");
+	$('#option5').html("<a href=\"loadViewStudentProfilePage();\">View Student Profile</a>");
+	$('#option6').html("<a href=\"loadViewAdminProfilePage();\">View Admin Profile</a>");
+
+
+
+
+
+//testLinks[0]="Schedule New";
+//testLinks[1]="Reschedule";
+//testLinks[2]="-";
+//testLinks[3]="-";
+//testLinks[4]="-";
+//testLinks[5]="-";
+//testLinks[6]="-";
+//	testLinks[7]="-";
+//	testLinks[8]="-";
+
+
+
+} else if (roleValue == 5) {
+
+//	CourseAdmin + TestAdmin
+
+	$('#option1').html("<a href=\"javascript:loadCreateStudentPage();\">Create Student</a>");
+	$('#option2').html("<a href=\"javascript:loadCreateAdminPage();\">Create Admin</a>");
+	$('#option3').html("<a href=\"javascript:loadEditStudentProfilePage();\">Edit Student profile</a>");
+	$('#option4').html("<a href=\"javascript:loadEditProfileAdminPage();\">Edit Admin Profile</a>");
+	$('#option5').html("<a href=\"loadViewStudentProfilePage();\">View Student Profile</a>");
+	$('#option6').html("<a href=\"loadViewAdminProfilePage();\">View Admin Profile</a>");
+
+
+
+
+
+//testLinks[0]="Schedule New";
+//testLinks[1]="Reschedule";
+//testLinks[2]="Start Test";
+//testLinks[3]="Ongoing Test";
+//testLinks[4]="-";
+//testLinks[5]="-";
+//testLinks[6]="-";
+//	testLinks[7]="-";
+//	testLinks[8]="-";
+
+
+} else if (roleValue == 6) {
+
+//	CourseAdmin + FacultyAdmin
+
+	$('#option1').html("<a href=\"javascript:loadCreateStudentPage();\">Create Student</a>");
+	$('#option2').html("<a href=\"javascript:loadCreateAdminPage();\">Create Admin</a>");
+	$('#option3').html("<a href=\"javascript:loadEditStudentProfilePage();\">Edit Student profile</a>");
+	$('#option4').html("<a href=\"javascript:loadEditProfileAdminPage();\">Edit Admin Profile</a>");
+	$('#option5').html("<a href=\"loadViewStudentProfilePage();\">View Student Profile</a>");
+	$('#option6').html("<a href=\"loadViewAdminProfilePage();\">View Admin Profile</a>");
+
+
+
+
+
+//testLinks[0]="Schedule New";
+//testLinks[1]="Reschedule";
+//testLinks[2]="Upload Questions";
+//testLinks[3]="-";
+//testLinks[4]="-";
+//testLinks[5]="-";
+//testLinks[6]="-";
+//	testLinks[7]="-";
+//	testLinks[8]="-";
+
+} else if (roleValue == 7) {
+
+//	all roles
+
+	$('#option1').html("<a href=\"javascript:loadCreateStudentPage();\">Create Student</a>");
+	$('#option2').html("<a href=\"javascript:loadCreateAdminPage();\">Create Admin</a>");
+	$('#option3').html("<a href=\"javascript:loadEditStudentProfilePage();\">Edit Student profile</a>");
+	$('#option4').html("<a href=\"javascript:loadEditProfileAdminPage();\">Edit Admin Profile</a>");
+	$('#option5').html("<a href=\"loadViewStudentProfilePage();\">View Student Profile</a>");
+	$('#option6').html("<a href=\"loadViewAdminProfilePage();\">View Admin Profile</a>");
+
+
+
+
+
+//testLinks[0]="Schedule New";
+//testLinks[1]="Reschedule";
+//testLinks[2]="Upload Questions";
+//testLinks[3]="Start Test";
+//testLinks[4]="Ongoing Test";
+//testLinks[5]="-";
+//testLinks[6]="-";
+//	testLinks[7]="-";
+//	testLinks[8]="-";
+
+}
+		
+	
+	
+	
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,231 @@
+<?xml version="1.0"?>
+<!-- =================================================================== -->
+<!-- Build file for sameekshak project    
+	<echo message="${basedir}"/>                                    -->
+<!-- =================================================================== -->
+
+<project name="sameekshak" default="build-ear" basedir=".">
+
+
+
+	<property environment="env" />
+	<property name="jboss.home" value="${env.JBOSS_HOME}" />
+	<property name="project-name" value="sameekshak" />
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="src.resources" value="${basedir}/resources" />
+	<property name="dist.dir" value="${basedir}/dist" />
+	<property name="build.classes.dir" value="${basedir}/classes" />
+	<property name="jboss.deploy.dir" value="${jboss.home}/server/default/deploy" />
+
+
+	<!-- =================================================================== -->
+	<!-- Build classpath -->
+	<!-- =================================================================== -->
+
+	<path id="classpath">
+		<fileset dir="${jboss.home}/common/lib">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${jboss.home}/lib">
+			<include name="*.jar" />
+		</fileset>
+		<pathelement path="${build.classes.dir}" />
+
+	</path>
+
+
+	<!-- =================================================================== -->
+	<!-- Prepares the build directory                                        -->
+	<!-- =================================================================== -->
+
+	<target name="prepare" depends="clean">
+		<mkdir dir="${build.classes.dir}" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+
+
+	<!-- =================================================================== -->
+	<!-- Compiles the source code                                            -->
+	<!-- =================================================================== -->
+
+	<target name="compile" depends="prepare">
+		<javac srcdir="${src.dir}" destdir="${build.classes.dir}">
+			<classpath refid="classpath" />
+		</javac>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Build ejb-jar -->
+	<!-- =================================================================== -->
+
+	<target name="build-ejb-jar" depends="compile">
+		<zip destfile="${dist.dir}/${project-name}.jar">
+			<fileset dir="${build.classes.dir}">
+				<include name="com/cdac/sameekshak/entities/**" />
+				<include name="com/cdac/sameekshak/constant/**" />
+				<include name="com/cdac/sameekshak/helper/**" />
+				<include name="com/cdac/sameekshak/business/**" />
+				<include name="com/cdac/sameekshak/util/**" />
+				<exclude name="com/cdac/sameekshak/web/**" />
+			</fileset>
+			<zipfileset dir="${src.resources}" prefix="META-INF/">
+				<include name="persistence.xml" />
+			</zipfileset>
+		</zip>
+
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Build war -->
+	<!-- =================================================================== -->
+
+	<target name="build-war" depends="build-ejb-jar">
+		<war destfile="${dist.dir}/${project-name}.war" webxml="${src.resources}/web.xml">
+			<zipfileset dir="${basedir}/view" prefix="view"/>
+			<fileset file="index.jsp"/>
+			<fileset file="Admin.jsp"/>
+			<!--lib dir="${basedir}/lib">
+				<include name="*.jar" />
+			</lib-->
+			<classes dir="${build.classes.dir}">
+				<include name="com/cdac/sameekshak/web/**" />
+				<include name="com/cdac/sameekshak/jndi/**" />
+				<exclude name="com/cdac/sameekshak/entities/**" />
+				<exclude name="com/cdac/sameekshak/util/**" />
+				<exclude name="com/cdac/sameekshak/business/**" />
+				<exclude name="com/cdac/sameekshak/constant/**" />
+			</classes>
+
+		</war>
+	</target>
+
+	<!-- =================================================================== -->
+	<!-- Build ear -->
+	<!-- =================================================================== -->
+
+	<target name="build-ear" depends="build-war,build-ejb-jar">
+
+		<jar destfile="${dist.dir}/${project-name}.ear">
+			<metainf dir="${src.resources}">
+				<include name="application.xml" />
+			</metainf>
+			<fileset file="${dist.dir}/${project-name}.jar" />
+			<fileset file="${dist.dir}/${project-name}.war" />
+		</jar>
+
+	</target>
+	
+	
+	<!-- =================================================================== -->
+		<!-- remote deploy prep													 -->
+		<!-- =================================================================== -->
+		<target name="-remote-deploy-prep">
+				<fail
+			     message="Target environment must be specified in ant command line as -Denv=target"
+			     unless="env" />
+
+				<fail message="${env}.properties file does not exist">
+					<condition>
+						<not>
+							<available file="${env}.properties" />
+						</not>
+					</condition>
+				</fail>
+
+				<!-- Get properties for target environment -->
+				<property file="${env}.properties" />
+			</target>
+
+		<!-- =================================================================== -->
+		<!-- remote jboss prompt password												 -->
+		<!-- =================================================================== -->
+			<target name="-remote-jboss-prompt-password" unless="jboss.remote.password">
+				<input message="Jboss Remote Password:" addproperty="jboss.remote.password">
+					<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+				</input>
+			</target>
+		
+		<!-- =================================================================== -->
+		<!-- remote deploy ear									 	 -->
+		<!-- =================================================================== -->
+			<target name="remote-deploy-ear"
+			   depends="build-ear, -remote-deploy-prep, -remote-jboss-prompt-password" >
+
+				<echo message="--------------------------------------------------------" />
+				<echo message="Transferring new deployment to remote location ..." />
+				
+				
+				<echo message="Copying ${project-name}.ear ..." />
+				<scp
+			    	sftp="true" trust="true"
+			    	file="${dist.dir}/${project-name}.ear"
+			    	todir="${jboss.remote.username}@${jboss.remote.host}:${jboss.remote.instance.deploy.intermediate}/${project-name}.ear"
+			    	password="${jboss.remote.password}" />
+				<scp sftp="true" trust="true" file="${basedir}/resources/jdbc-mysql-ds.xml" todir="${jboss.remote.username}@${jboss.remote.host}:${jboss.remote.instance.deploy.intermediate}/jdbc-mysql-ds.xml" password="${jboss.remote.password}" />
+				
+				
+				<echo message="Pausing 3 seconds before copying to deploy folder"/> 
+				<sleep seconds="3"/>
+				
+				
+				<echo message="Pausing 5 seconds before copying ${project-name}.ear; so that response component gets deployed first"/> 
+				<sleep seconds="5"/>
+				
+				<echo message="Moving ${project-name}.ear to deploy directory" />
+				<sshexec
+					trust="true"
+					host="${jboss.remote.host}"
+					username="${jboss.remote.username}" password="${jboss.remote.password}"
+					command="mv ${jboss.remote.instance.deploy.intermediate}/${project-name}.ear ${jboss.remote.instance.deploy}/${project-name}.ear" />
+				<sshexec
+					trust="true"
+					host="${jboss.remote.host}"
+					username="${jboss.remote.username}" password="${jboss.remote.password}"
+					command="mv ${jboss.remote.instance.deploy.intermediate}/jdbc-mysql-ds.xml ${jboss.remote.instance.deploy}/jdbc-mysql-ds.xml" />
+				
+				<echo message="--------------------------------------------------------" />
+			</target>
+		<!-- =================================================================== -->
+		<!-- remote undeploy ear									 	 -->
+		<!-- =================================================================== -->
+		
+		<target name="remote-undeploy-ear"
+			   depends="-remote-deploy-prep, -remote-jboss-prompt-password" >
+
+				<echo message="Removing remote deployment ..." />
+				<echo message="--------------------------------------------------------" />
+				
+				<echo message="Removing ${project-name}.ear ..." />
+				<sshexec
+					trust="true"
+					host="${jboss.remote.host}"
+					username="${jboss.remote.username}" password="${jboss.remote.password}"
+					command="rm -f ${jboss.remote.instance.deploy}/${project-name}.ear" />
+				
+				<echo message="--------------------------------------------------------" />
+			</target>	
+		
+	
+	
+
+	<!-- =================================================================== -->
+	<!-- Cleans up generated stuff                                           -->
+	<!-- =================================================================== -->
+	<target name="clean">
+		<delete dir="${build.classes.dir}" />
+		<delete dir="${dist.dir}" />
+		<delete file="${jboss.deploy.dir}/${project-name}.ear" />
+		<delete file="${jboss.deploy.dir}/mysql-ds.xml" />
+	</target>
+	<!-- =================================================================== -->
+	<!-- run this target if you want to deploy project to JBoss -->
+	<!-- =================================================================== -->
+	<target name="deploy.jboss" depends="build-ear">
+		<!-- copy ${project-name}.war to jboss deployment directory -->
+		<copy file="${dist.dir}/${project-name}.ear" todir="${jboss.deploy.dir}" />
+		<copy file="${basedir}/resources/jdbc-mysql-ds.xml" todir="${jboss.deploy.dir}" />
+		<echo message="start server if its not running, using command ${jboss.home}/bin/run.sh" />
+	</target>
+
+</project>
+
